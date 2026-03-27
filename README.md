@@ -162,7 +162,3 @@ kubectl logs -l job-name=slo-calculator --tail=20
 - **Runbooks as code** — operational procedures version-controlled
 
 ---
-
-## 📄 License
-
-MIT
