@@ -1,0 +1,104 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: chaos-runner
+  namespace: default
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: chaos-runner-role
+  namespace: default
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list", "delete"]
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["get", "list", "patch", "update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: chaos-runner-binding
+  namespace: default
+subjects:
+- kind: ServiceAccount
+  name: chaos-runner
+  namespace: default
+roleRef:
+  kind: Role
+  name: chaos-runner-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: chaos-runner
+  namespace: default
+spec:
+  schedule: "0 */6 * * *"
+  suspend: true
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: chaos-runner
+          containers:
+          - name: chaos-runner
+            image: python:3.12-slim
+            command:
+            - /bin/sh
+            - -c
+            - |
+              pip install kubernetes -q &&
+              python /scripts/chaos_runner.py
+            volumeMounts:
+            - name: chaos-script
+              mountPath: /scripts
+          volumes:
+          - name: chaos-script
+            configMap:
+              name: chaos-runner-script
+          restartPolicy: OnFailure
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: chaos-runner-script
+  namespace: default
+data:
+  chaos_runner.py: |
+    import random, time, json, logging
+    from datetime import datetime
+    from kubernetes import client, config
+
+    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
+
+    config.load_incluster_config()
+    v1 = client.CoreV1Api()
+    apps_v1 = client.AppsV1Api()
+
+    def get_pods():
+        pods = v1.list_namespaced_pod(namespace="default", label_selector="app=api-service")
+        return [p.metadata.name for p in pods.items if p.status.phase == "Running"]
+
+    def kill_random_pod():
+        pods = get_pods()
+        if not pods:
+            return {"experiment": "pod-kill", "status": "skipped", "reason": "no pods"}
+        target = random.choice(pods)
+        v1.delete_namespaced_pod(name=target, namespace="default")
+        logger.info(f"Killed pod: {target}")
+        time.sleep(20)
+        recovered = get_pods()
+        return {
+            "experiment": "pod-kill",
+            "killed": target,
+            "recovered": len(recovered) >= len(pods),
+            "status": "success" if len(recovered) >= len(pods) else "failed"
+        }
+
+    result = kill_random_pod()
+    print(json.dumps(result, indent=2))
