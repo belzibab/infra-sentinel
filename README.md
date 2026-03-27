@@ -162,3 +162,7 @@ kubectl logs -l job-name=slo-calculator --tail=20
 - **Runbooks as code** — operational procedures version-controlled
 
 ---
+
+## NOTE
+
+The daily SLO Report Workflow requires access to the in-cluster Prometheus Instance. It runs correctly as a Kubernetes Cronjob Every 5 minutes. The GitHub Actions Workflow is triggered manually when the cluster is active
