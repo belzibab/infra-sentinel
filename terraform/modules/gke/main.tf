@@ -44,3 +44,8 @@ resource "google_container_node_pool" "primary_nodes" {
     auto_upgrade = true
   }
 }
+
+resource "google_compute_project_metadata_item" "sentinel" {
+  key   = "infra-sentinel"
+  value = "true"
+}
