@@ -6,6 +6,11 @@ on:
     paths:
       - 'terraform/**'
 
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
 jobs:
   terraform-plan:
     name: Terraform Plan
@@ -15,15 +20,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.5.0
-
-      - name: Authenticate to GCP
-        uses: google-github-actions/auth@v2
-        with:
-          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
 
       - name: Terraform Init
         working-directory: terraform/environments/staging
