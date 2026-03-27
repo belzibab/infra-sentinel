@@ -1,0 +1,41 @@
+name: Deploy App
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/api/**'
+
+jobs:
+  deploy:
+    name: Build and Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+
+      - name: Setup Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Build and Push image
+        run: |
+          gcloud builds submit src/api \
+            --tag us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/infra-sentinel/api:${{ github.sha }}
+
+      - name: Get GKE credentials
+        run: |
+          gcloud container clusters get-credentials infra-sentinel-staging \
+            --region us-central1 \
+            --project ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl set image deployment/api-service \
+            api=us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/infra-sentinel/api:${{ github.sha }}
+          kubectl rollout status deployment/api-service
