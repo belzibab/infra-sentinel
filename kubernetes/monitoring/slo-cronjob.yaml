@@ -1,0 +1,64 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: slo-calculator
+  namespace: default
+spec:
+  schedule: "*/5 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: slo-calculator
+            image: python:3.12-slim
+            command:
+            - /bin/sh
+            - -c
+            - |
+              pip install requests -q &&
+              python /scripts/slo_calculator.py
+            volumeMounts:
+            - name: slo-script
+              mountPath: /scripts
+          volumes:
+          - name: slo-script
+            configMap:
+              name: slo-calculator-script
+          restartPolicy: OnFailure
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: slo-calculator-script
+  namespace: default
+data:
+  slo_calculator.py: |
+    import requests, json
+    from datetime import datetime
+
+    PROMETHEUS_URL = "http://prometheus-kube-prometheus-prometheus.monitoring.svc.cluster.local:9090"
+
+    def query_prometheus(query):
+        try:
+            r = requests.get(f"{PROMETHEUS_URL}/api/v1/query", params={"query": query}, timeout=10)
+            data = r.json()
+            if data["data"]["result"]:
+                return float(data["data"]["result"][0]["value"][1])
+        except:
+            pass
+        return 0.0
+
+    total = query_prometheus('sum(app_requests_total)')
+    errors = query_prometheus('sum(app_requests_total{status=~"5.."})')
+    availability = ((total - errors) / total * 100) if total > 0 else 100.0
+    error_budget_remaining = max(0, (availability - 99.9) / 0.1 * 100)
+
+    report = {
+        "timestamp": datetime.utcnow().isoformat(),
+        "availability_sli": round(availability, 4),
+        "availability_target": 99.9,
+        "status": "OK" if availability >= 99.9 else "BURNING",
+        "error_budget_remaining_pct": round(error_budget_remaining, 2)
+    }
+    print(json.dumps(report, indent=2))
