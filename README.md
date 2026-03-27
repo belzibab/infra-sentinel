@@ -31,7 +31,7 @@ GCP ── VPC ── GKE Cluster
 
 ---
 
-## 🚀 Stack
+## Stack
 
 | Layer | Technology |
 |-------|-----------|
@@ -103,7 +103,7 @@ A Python CronJob runs every 5 minutes inside the cluster, querying Prometheus fo
 
 ---
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 - GCP account with billing enabled
@@ -151,7 +151,7 @@ kubectl logs -l job-name=slo-calculator --tail=20
 
 ---
 
-## 📊 SRE Practices Demonstrated
+## SRE Practices Demonstrated
 
 - **SLO/SLI/Error Budget** — defined and tracked automatically
 - **Infrastructure as Code** — 100% of infra managed by Terraform
