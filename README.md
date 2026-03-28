@@ -4,11 +4,14 @@
 ![Deploy App](https://github.com/belzibab/infra-sentinel/actions/workflows/deploy-app.yml/badge.svg)
 ![Daily SLO Report](https://github.com/belzibab/infra-sentinel/actions/workflows/slo-report.yml/badge.svg)
 
+![image alt](https://github.com/belzibab/belzibab/blob/d98cfc7cbd987bd45ce240e684cd1b0d5bf2f549/images/Infra-Sentinel.png)
+
 > Platform reliability engineering suite built on GCP — featuring GitOps infrastructure, SLO tracking, chaos engineering, and full observability stack.
 
 ---
 
 ## 🏗️ Architecture
+![image alt](https://github.com/belzibab/belzibab/blob/d98cfc7cbd987bd45ce240e684cd1b0d5bf2f549/images/sre_project_architecture.svg)
 ```
 GitHub Actions (CI/CD)
         │
