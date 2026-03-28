@@ -12,25 +12,6 @@
 
 ## 🏗️ Architecture
 ![image alt](https://github.com/belzibab/belzibab/blob/d98cfc7cbd987bd45ce240e684cd1b0d5bf2f549/images/sre_project_architecture.svg)
-```
-GitHub Actions (CI/CD)
-        │
-        ▼
-  Terraform (IaC)
-        │
-        ▼
-GCP ── VPC ── GKE Cluster
-              │
-              ├── FastAPI Service (2 replicas)
-              │         └── /health · /metrics
-              │
-              ├── Prometheus (metrics + alerting)
-              ├── Grafana (dashboards)
-              ├── Alertmanager (Slack notifications)
-              │
-              └── SLO Calculator CronJob
-                        └── error budget tracking
-```
 
 ---
 
