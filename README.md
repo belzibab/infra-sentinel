@@ -1,4 +1,4 @@
-# 🛡️ infra-sentinel
+# infra-sentinel
 
 ![Terraform Apply](https://github.com/belzibab/infra-sentinel/actions/workflows/terraform-apply.yml/badge.svg)
 ![Deploy App](https://github.com/belzibab/infra-sentinel/actions/workflows/deploy-app.yml/badge.svg)
@@ -10,7 +10,7 @@
 
 ---
 
-## 🏗️ Architecture
+## Architecture
 ![image alt](https://github.com/belzibab/belzibab/blob/d98cfc7cbd987bd45ce240e684cd1b0d5bf2f549/images/sre_project_architecture.svg)
 
 ---
@@ -30,7 +30,7 @@
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 ```
 infra-sentinel/
 ├── terraform/
@@ -61,7 +61,7 @@ infra-sentinel/
 
 ---
 
-## ⚙️ How It Works
+## How It Works
 
 ### GitOps Flow
 Every pull request targeting `terraform/` triggers a `terraform plan` as a PR comment. Merging to `main` automatically applies the infrastructure changes. No manual `terraform apply` needed.
